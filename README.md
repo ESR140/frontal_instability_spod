@@ -29,18 +29,28 @@ The Script will calculate the vorticity for each z-plane and create a new variab
 git clone [https://github.com/ESR140/frontal_instability_spod.git](https://github.com/ESR140/frontal_instability_spod.git)
 
 ### Step 2: Install prerequisites
-Launch a terminal (UNIX) window and change directory to your liking. Run the following command line to install/upgrade the prerequisite Python packages.
+Launch a terminal (UNIX) window and change directory to your liking. Run the following command line to install/upgrade the prerequisite Python packages. Ideally, also create a virtual environment for better package management.
 
 ```
 pip install -r requirements.txt
 ```
 
-### Step 3: Running the code
+## Step 3: Navigating to the required directory
+
+Navigate to the frontal_instability_spod directory from your current directory.
+
+## Step 4: Insert your file 
+
+Insert your netCDF File in the frontal_instaility_spod directory so that the code can access it
+
+### Step 4: Running the code
 You can run the spod_calc.py file in the command terminal with the following command
 
-'''
+```
 python3 spod_calc.py (your .nc file)
-'''
+```
+
+The results will be stored in the 'results' folder, and it will contain SPOD for each z-plane in a separate folder called 'zplane_(zplane index)'. Inside each foleder there will be two h5py files, a spectrum plot containing the energy for each corresponding frequency and also the modeshape plot for modes 1 and 3 for frequency inex 2.
 
 
 
