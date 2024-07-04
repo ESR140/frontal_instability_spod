@@ -3,24 +3,41 @@
 This repo contanis code to calculate vorticity and conduct Spectral orthogonal decomposition (SPOD) from an input netCDF File which should contain the following structure:
 
 Dimensions -->
+
 idimension =  ;
+
 jdimension =  ;
+
 kdimension =  ;
+
 record = UNLIMITED ;
+
 timedimension = 1 ;
 
 Variables -->
+
 double time(record,timedimension) ;
+
       time:units = "s" ;
+      
 double u(record,idimension,timedimension,jdimension,kdimension) ;
+
       u:units = "m/s" ;
+      
 double v(record,idimension,timedimension,jdimension,kdimension) ;
+
       v:units = "m/s" ;
+      
 double x(record,idimension) ;
+
       x:units = "m" ;
+      
 double y(record,jdimension) ;
+
       y:units = "m" ;
+      
 double z(record,kdimension) ;
+
       z:units = "m" ;
 
 
