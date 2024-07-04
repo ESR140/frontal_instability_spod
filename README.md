@@ -2,43 +2,23 @@
 
 This repo contanis code to calculate vorticity and conduct Spectral orthogonal decomposition (SPOD) from an input netCDF File which should contain the following structure:
 
-Dimensions -->
+### Dimensions -->
 
-idimension =  ;
+- idimension , jdimension , kdimension , record (UNLIMITED) , timedimension
 
-jdimension =  ;
+### Variables -->
 
-kdimension =  ;
-
-record = UNLIMITED ;
-
-timedimension = 1 ;
-
-Variables -->
-
-double time(record,timedimension) ;
-
-      time:units = "s" ;
+- double time(record,timedimension) ;
       
-double u(record,idimension,timedimension,jdimension,kdimension) ;
-
-      u:units = "m/s" ;
+- double u(record,idimension,timedimension,jdimension,kdimension) ;
       
-double v(record,idimension,timedimension,jdimension,kdimension) ;
-
-      v:units = "m/s" ;
+- double v(record,idimension,timedimension,jdimension,kdimension) ;
       
-double x(record,idimension) ;
+- double x(record,idimension) ;
 
-      x:units = "m" ;
+- double y(record,jdimension) ;
       
-double y(record,jdimension) ;
-
-      y:units = "m" ;
-      
-double z(record,kdimension) ;
-
-      z:units = "m" ;
+- double z(record,kdimension) ;
 
 
 The Script will calculate the vorticity for each z-plane and create a new variable called 'zeta'. After this, it will carry out SPOD and save the results in the 'results' folder.
