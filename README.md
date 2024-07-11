@@ -47,7 +47,7 @@ Insert your netCDF File in the frontal_instaility_spod directory so that the cod
 You can run the spod_calc.py file in the command terminal with the following command
 
 ```
-python3 spod_calc.py (your .nc file)
+python3 spod_calc.py (your .nc file) --operation (spod or pod) --plot (spod or pod)
 ```
 
 The results will be stored in the 'results' folder, and it will contain SPOD for each z-plane in a separate folder called 'zplane_(zplane index)'. Inside each foleder there will be two h5py files, a spectrum plot containing the energy for each corresponding frequency and also the modeshape plot for modes 1 and 3 for frequency inex 2.
