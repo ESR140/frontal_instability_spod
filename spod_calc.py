@@ -77,10 +77,10 @@ if not args.skip_vort_calc:          # Will run this section by default
     print("--------------------------------------")
     print("Calculating Vorticity......")
 
-    ncfile_out = nc.Dataset('vorticity.nc', 'r+', format='NETCDF4')
-
+    
     if  not os.path.exists('vorticity.nc'):
         print("vorticity.nc file does not exist. Creating vorticity.nc file")
+        ncfile_out = nc.Dataset('vorticity.nc', 'r+', format='NETCDF4')
         record = ncfile_out.createDimension('record', None)  # Unlimited dimension (can be appended)
         idimension = ncfile_out.createDimension('idimension', num_idimension)  # Fixed size dimension
         timedimension = ncfile_out.createDimension('timedimension', num_timedimension)
@@ -89,12 +89,14 @@ if not args.skip_vort_calc:          # Will run this section by default
 
         zeta_var = ncfile_out.createVariable('zeta', np.float64, ('record', 'idimension', 'timedimension', 'jdimension', 'kdimension',))
     
-    else: print("vorticity.nc file exists. Modifying this file.")
+    else: 
+        print("vorticity.nc file exists. Modifying this file.")
+        ncfile_out = nc.Dataset('vorticity.nc', 'r+', format='NETCDF4')
 
 
-    for zplaneindex in tqdm(kdimlist, desc='Vorticity Calculation'):
+    for zplaneindex in tqdm(kdimlist, desc='Vorticity Calculation -> Iterating through z-planes'):
 
-        for recindex in range(num_records):
+        for recindex in tqdm(range(num_records), desc='                         Iterating through records', leave=False):
         
             u = ncfile_in.variables['u'][recindex, :, 0, :, zplaneindex]
             v = ncfile_in.variables['v'][recindex, :, 0, :, zplaneindex]
@@ -137,7 +139,6 @@ if args.operation in ['spod', 'pod']:                 # Will run this section by
     decomp_type = args.operation
 
     print("--------------------------------------")
-    print(f"{decomp_type} starting ............ ")
 
     ncfile_out = nc.Dataset('vorticity.nc', 'r+', format='NETCDF4')
     num_cols = num_idimension * num_jdimension
@@ -157,7 +158,8 @@ if args.operation in ['spod', 'pod']:                 # Will run this section by
         
         os.makedirs(savepath, exist_ok=True)
 
-        for recindex in range(num_records):
+
+        for recindex in tqdm(range(num_records), desc='Loading data for calculations: ', leave=False):
             zeta = ncfile_out.variables['zeta'][recindex, :, 0, :, zplaneindex]
             counter = 0
             for i in range(num_idimension):
@@ -166,6 +168,7 @@ if args.operation in ['spod', 'pod']:                 # Will run this section by
                     data[recindex, counter,1] = x[i]
                     data[recindex, counter,2] = y[j]
                     counter += 1
+        print("Data loaded for computations!")
         
         if decomp_type == 'spod':
             spod.spod(data[:,:,0], dt, savepath)
