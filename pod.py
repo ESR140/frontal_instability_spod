@@ -127,6 +127,8 @@ def plot_spatial_modes(plotdata, gridx, gridy, savepath, modes_to_plot):
         
         ax.set_title('Modeshape Plot - Mode {}'.format(i + 1), fontsize=FS)
 
+        cbar = fig.colorbar(im, ax=ax)
+        cbar.set_label(r'$\zeta/f$',size=12)
 
         plt.savefig(os.path.join(savepath, f'pod_modeshape_{i}.png'))
         plt.close()

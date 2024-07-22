@@ -282,6 +282,7 @@ if args.plot in ['spod', 'pod']:
             plotdata = np.zeros((len(plot_modes), num_idimension, num_jdimension))
             for i in range(len(plot_modes)):
                 plotdata[i, :, :] = pod_coeffs[i, :].reshape(num_idimension, num_jdimension)
+            plotdata = plotdata / fcor
 
             plot_spatial_modes(plotdata, gridx, gridy, savepath, plot_modes)
 
