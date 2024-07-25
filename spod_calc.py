@@ -59,7 +59,7 @@ print("Finished reading variables")
 print("--------------------------------------'")
 
 # This specifies the z-plane for which calculations are to be done
-kdimlist=[97]
+kdimlist=[93,95,97]
 
 '''
 ___________________________________________________________________________
@@ -175,7 +175,7 @@ if args.operation in ['spod', 'pod']:                 # Will run this section by
         elif decomp_type == 'pod':
             pod(data[:,:,0], savepath, num_modes= 10)
 
-    print(f"{decomp_type} Completed! Results saved to /results folder")
+    print(f"{decomp_type} Completed! Results saved to /results/zplane_{zplaneindex} folder")
     print("--------------------------------------")
 
 
@@ -294,12 +294,12 @@ if args.plot in ['spod', 'pod']:
                 reconstruct_flow_data[i, :, :, :] = temp[:, :].reshape(num_records, num_idimension, num_jdimension)
             reconstruct_flow_data = reconstruct_flow_data / fcor
 
-            plot_reconstruct_flow_field(reconstruct_flow_data, gridx, gridy, savepath, plot_modes, fps=20)
+            plot_reconstruct_flow_field(reconstruct_flow_data, gridx, gridy, savepath, plot_modes, fps=5)
 
             print(f"Reconstructed flow field plotted for z-plane {z[zplaneindex]} m")
             
 
-    print("Plotting finished and plots saved in the /results folder")
+    print(f"Plotting finished and plots saved in the /results/zplane_{zplaneindex} folder")
     print("--------------------------------------")
 
 elif args.plot == 'skip':
