@@ -1,3 +1,5 @@
 vorticity.nc
 __pycache__
-myscript.sh
+config.sh
+*.log
+*.out
