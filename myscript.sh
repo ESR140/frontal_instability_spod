@@ -20,11 +20,16 @@ base_output_path="${BASE_OUTPUT_PATH}"
 
 # Define an array of plane types and indices
 declare -a planes=(
-    "XY 97"
-    "XY 95"
     "YZ 128"
     "YZ 64"
+    "YZ 32"
+    "YZ 216"
     "XZ 512"
+    "XZ 256"
+    "XZ 768"
+    "XY 90"
+    "XY 92"
+    "XY 94"
 )
 
 # Loop through the planes array and run the Python scripts for each
@@ -48,10 +53,10 @@ for plane in "${planes[@]}"; do
         echo "Completed vorticity calculation for $plane_type plane, index $plane_index. Output in $full_output_path"
         
         # Construct the vorticity output filename
-        vorticity_file="vorticity_${plane_type}_${plane_index}"
+        vorticity_file="vorticity_${plane_type}_${plane_index}.nc"
         
         # Run the pod.py script with the output of vorticity_calc.py as input
-        python3 pod.py "${full_output_path}/${vorticity_file}" "$full_output_path" --plane_type "$plane_type"
+        python3 pod.py "${full_output_path}/${vorticity_file}" "$full_output_path" --plane_type "$plane_type" 
         
         if [ $? -eq 0 ]; then
             echo "Completed POD analysis for $plane_type plane, index $plane_index"

@@ -6,7 +6,6 @@ import time
 import psutil
 import h5py
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def parse_plane_type(input_file, plane_type):
 
@@ -44,7 +43,8 @@ def parse_arguments():
     parser.add_argument('input_path', type=str, help='Path of the input netCDF file')
     parser.add_argument('output_path', type=str, nargs='?', default=cwd, help='Path to store the vorticity file (default: current working directory)')
     parser.add_argument('--plane_type', choices=['XY', 'XZ', 'YZ'], required=True, help='Type of plane to calculate the vorticity for')
-    #parser.add_argument('--plane_index', type=int, required=True, help='Index of the plane for vorticity calculation')
+    parser.add_argument('--skip_pod', action='store_true', help='Skip the POD function if specified')
+    parser.add_argument('--skip_plot', action='store_true', help='Skip plotting if specified')
     return parser.parse_args()
 
 def DataLoader(plane_info):
@@ -178,31 +178,30 @@ def plot_spatial_modes_separate(plane_info, savepath, modes_to_plot, plane_type)
         S = f['singular_values'][:]
         pod_modes = f['pod_modes'][:]
 
-    var1 = plane_info['var1'][:] / 1000  # Convert to km
-    var2 = plane_info['var2'][:] / 1000  # Convert to km
+    var1 = plane_info['var1'][:] 
+    var2 = plane_info['var2'][:] 
 
     # Set labels and grid orientation based on plane type
     if plane_type == 'XY':
         xlabel, ylabel = 'Y [km]', 'X [km]'
-        gridx, gridy = np.meshgrid(var2, var1)  # Y on horizontal, X on vertical
+        gridx, gridy = np.meshgrid(var2 / 1000, var1 / 1000)  # Y on horizontal, X on vertical
+        aspect_ratio = (gridx.max() - gridx.min()) / (gridy.max() - gridy.min())
+        base_size = 12  # Base size for the longer dimension
+        if aspect_ratio > 1:
+            figsize = (base_size, base_size / aspect_ratio)
+        else:
+            figsize = (base_size * aspect_ratio, base_size)
+
     elif plane_type == 'YZ':
-        xlabel, ylabel = 'Y [km]', 'Z [km]'
-        gridx, gridy = np.meshgrid(var1, var2)  # Y on horizontal, Z on vertical
+        xlabel, ylabel = 'Y [km]', 'Z [m]'
+        gridx, gridy = np.meshgrid(var1 / 1000, var2)  # Y on horizontal, Z on vertical
+        figsize = (14,8)
     elif plane_type == 'XZ':
-        xlabel, ylabel = 'X [km]', 'Z [km]'
-        gridx, gridy = np.meshgrid(var1, var2)  # X on horizontal, Z on vertical
+        xlabel, ylabel = 'X [km]', 'Z [m]'
+        gridx, gridy = np.meshgrid(var1 / 1000, var2)  # X on horizontal, Z on vertical
+        figsize = (12,8)
     else:
         raise ValueError(f"Unknown plane type: {plane_type}")
-
-    # Calculate aspect ratio
-    aspect_ratio = (gridx.max() - gridx.min()) / (gridy.max() - gridy.min())
-
-    # Set figure size based on aspect ratio
-    base_size = 12  # Base size for the longer dimension
-    if aspect_ratio > 1:
-        figsize = (base_size, base_size / aspect_ratio)
-    else:
-        figsize = (base_size * aspect_ratio, base_size)
 
     FS = 12
 
@@ -250,19 +249,19 @@ def plot_spatial_modes(plane_info, savepath, modes_to_plot, plane_type):
         S = f['singular_values'][:]
         pod_modes = f['pod_modes'][:]
 
-    var1 = plane_info['var1'][:] / 1000  # Convert to km
-    var2 = plane_info['var2'][:] / 1000  # Convert to km
+    var1 = plane_info['var1'][:]
+    var2 = plane_info['var2'][:]
 
     # Set labels and grid orientation based on plane type
     if plane_type == 'XY':
         xlabel, ylabel = 'Y [km]', 'X [km]'
-        gridx, gridy = np.meshgrid(var2, var1)  # Y on horizontal, X on vertical
+        gridx, gridy = np.meshgrid(var2 / 1000, var1 / 1000)  # Y[km] on horizontal, X[km] on vertical
     elif plane_type == 'YZ':
-        xlabel, ylabel = 'Y [km]', 'Z [km]'
-        gridx, gridy = np.meshgrid(var1, var2)  # Y on horizontal, Z on vertical
+        xlabel, ylabel = 'Y [km]', 'Z [m]'
+        gridx, gridy = np.meshgrid(var1 / 1000, var2)  # Y[km] on horizontal, Z[m] on vertical
     elif plane_type == 'XZ':
-        xlabel, ylabel = 'X [km]', 'Z [km]'
-        gridx, gridy = np.meshgrid(var1, var2)  # X on horizontal, Z on vertical
+        xlabel, ylabel = 'X [km]', 'Z [m]'
+        gridx, gridy = np.meshgrid(var1 / 1000, var2)  # X[km] on horizontal, Z[m] on vertical
     else:
         raise ValueError(f"Unknown plane type: {plane_type}")
 
@@ -271,11 +270,11 @@ def plot_spatial_modes(plane_info, savepath, modes_to_plot, plane_type):
     
     # Determine subplot layout
     n_modes = len(modes_to_plot)
-    n_cols = min(2, n_modes)  # Max 3 columns
+    n_cols = min(2, n_modes)  # Max 2 columns
     n_rows = (n_modes + n_cols - 1) // n_cols
 
     # Set figure size
-    base_size = 10  # Base size for each subplot
+    base_size = 10  # Reduced base size for each subplot
     figsize = (base_size * n_cols * aspect_ratio, base_size * n_rows)
 
     fig, axes = plt.subplots(n_rows, n_cols, figsize=figsize, squeeze=False)
@@ -318,13 +317,13 @@ def plot_spatial_modes(plane_info, savepath, modes_to_plot, plane_type):
         fig.delaxes(axes[row, col])
 
     # Add a common colorbar
-    fig.subplots_adjust(right=0.9)
-    cbar_ax = fig.add_axes([0.92, 0.15, 0.02, 0.7])
+    fig.subplots_adjust(right=0.85)
+    cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
     cbar = fig.colorbar(im, cax=cbar_ax)
     cbar.set_label(r'$\zeta/f$', size=FS)
 
-    plt.tight_layout(rect=[0, 0.03, 0.9, 0.95])  # Adjust layout to accommodate suptitle and colorbar
-    plt.savefig(os.path.join(savepath, f'pod_modeshapes_subplots.png'), dpi=300, bbox_inches='tight')
+    plt.tight_layout(rect=[0, 0.03, 0.85, 0.95])  # Adjust layout to accommodate suptitle and colorbar
+    plt.savefig(os.path.join(savepath, f'pod_modeshapes_subplots.png'), dpi=150, bbox_inches='tight')
     plt.close()
 
     print(f"Spatial modes plot saved as 'pod_modeshapes_subplots.png' in {savepath}")
@@ -336,11 +335,21 @@ if __name__ == '__main__':
     plane_type = args.plane_type
     output_path = args.output_path
     print(f"Input Path: {input_file}")
+
     parse_plane_type(input_file, plane_type)
     plane_info = parse_plane_type(input_file, plane_type)
-    data = DataLoader(plane_info)
-    pod(data[:,:,0].filled(), output_path, num_modes=3)
-    plot_pod_energy(output_path)
-    plot_spatial_modes_separate(plane_info, output_path, [0,1,2], plane_type)
-    plot_spatial_modes(plane_info, output_path, [0, 1, 2], plane_type)  
+
+    if not args.skip_pod:
+        data = DataLoader(plane_info)
+        pod(data[:,:,0].filled(), output_path, num_modes=3)
+    else: print("Skipping POD Calculations")
+
+    if not args.skip_plot:
+        print('--------------------------------------')  
+        print('Start Plotting')
+        plot_pod_energy(output_path)
+        plot_spatial_modes_separate(plane_info, output_path, [0,1,2], plane_type)
+        plot_spatial_modes(plane_info, output_path, [0, 1, 2], plane_type)
+        print('--------------------------------------')
+    else: print("Skippping Plotting")  
     

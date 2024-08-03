@@ -94,7 +94,7 @@ def calc_vort_XZ(ncfile_in, output_path, plane_type, plane_index):
         for recindex in tqdm(range(dimensions['record']), desc='Vorticity Calculation -> Iterating through records'):
             zeta_buffer = np.zeros((dimensions['idimension'], dimensions['timedimension'], 1, dimensions['kdimension']))
             
-            for k in tqdm(range(51, dimensions['kdimension']), desc='                         Iterating through z-values', leave=False):
+            for k in tqdm(range(dimensions['kdimension']), desc='                         Iterating through z-values', leave=False):
                 u = ncfile_in.variables['u'][recindex, :, 0, :, k]
                 v = ncfile_in.variables['v'][recindex, :, 0, :, k]
                 
@@ -146,7 +146,7 @@ def calc_vort_YZ(ncfile_in, output_path, plane_type, plane_index):
         for recindex in tqdm(range(dimensions['record']), desc='Vorticity Calculation -> Iterating through records'):
             zeta_buffer = np.zeros((1, dimensions['timedimension'], dimensions['jdimension'], dimensions['kdimension']))
             
-            for k in tqdm(range(51, dimensions['kdimension']), desc='                         Iterating through z-values', leave=False):
+            for k in tqdm(range(dimensions['kdimension']), desc='                         Iterating through z-values', leave=False):
                 u = ncfile_in.variables['u'][recindex, :, 0, :, k]
                 v = ncfile_in.variables['v'][recindex, :, 0, :, k]
                 
