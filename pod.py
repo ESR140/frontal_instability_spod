@@ -336,12 +336,10 @@ if __name__ == '__main__':
     plane_type = args.plane_type
     output_path = args.output_path
     print(f"Input Path: {input_file}")
-    # input_file = '/media/user/Extreme SSD/SIMULATION_DATA/vorticity_XY_97.nc'
-    # plane_type = 'XY'
     parse_plane_type(input_file, plane_type)
     plane_info = parse_plane_type(input_file, plane_type)
     data = DataLoader(plane_info)
-    #pod(data[:,:,0].filled(), output_path, num_modes=3)
+    pod(data[:,:,0].filled(), output_path, num_modes=3)
     plot_pod_energy(output_path)
     plot_spatial_modes_separate(plane_info, output_path, [0,1,2], plane_type)
     plot_spatial_modes(plane_info, output_path, [0, 1, 2], plane_type)  
