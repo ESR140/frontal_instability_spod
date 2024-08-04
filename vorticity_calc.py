@@ -199,8 +199,8 @@ def main():
 
     args = parse_arguments()
     
-    if not check_output_file(args.output_path, args.plane_type, args.plane_index):
-        return
+    # if not check_output_file(args.output_path, args.plane_type, args.plane_index):
+    #     return
 
     with nc.Dataset(args.input_path, 'r') as ncfile_in:
         calculate_vorticity(ncfile_in, args.output_path, args.plane_type, args.plane_index)
