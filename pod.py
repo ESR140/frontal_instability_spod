@@ -195,11 +195,11 @@ def plot_spatial_modes_separate(plane_info, savepath, modes_to_plot, plane_type)
     elif plane_type == 'YZ':
         xlabel, ylabel = 'Y [km]', 'Z [m]'
         gridx, gridy = np.meshgrid(var1 / 1000, var2)  # Y on horizontal, Z on vertical
-        figsize = (14,8)
+        figsize = (16,8)
     elif plane_type == 'XZ':
         xlabel, ylabel = 'X [km]', 'Z [m]'
         gridx, gridy = np.meshgrid(var1 / 1000, var2)  # X on horizontal, Z on vertical
-        figsize = (12,8)
+        figsize = (20,8)
     else:
         raise ValueError(f"Unknown plane type: {plane_type}")
 
