@@ -7,6 +7,7 @@ import os
 import netCDF4 as nc
 from tqdm import tqdm
 
+
 def parse_arguments():
     cwd = os.getcwd()
     parser = argparse.ArgumentParser(description="Calculate 2D KE turbulence spectra from netCDF file")
@@ -16,20 +17,22 @@ def parse_arguments():
     return parser.parse_args()
 
 def parse_input(input_file, plane_index):
-    
     try:
         with nc.Dataset(input_file, 'r') as nc_file:
-            u = nc_file.variables['u'][:,:,0,:,plane_index]
-            v = nc_file.variables['v'][:,:,0,:,plane_index]
-            xmax = nc_file.variables['x'][0,:].max()
-            ymax = nc_file.variables['y'][0,:].max()
-            
+            u = []
+            v = []
+            num_records = len(nc_file.dimensions['record'])
+            for t in range(num_records):
+                u.append(nc_file.variables['u'][t, :, 0, :, plane_index])
+                v.append(nc_file.variables['v'][t, :, 0, :, plane_index])
+            u = np.array(u)
+            v = np.array(v)
+            xmax = nc_file.variables['x'][0, :].max()
+            ymax = nc_file.variables['y'][0, :].max()
             print("Data Loaded....")
             print(f"u Shape: {u.shape}")
             print(f"v Shape: {v.shape}")
-
-            return u,v,xmax,ymax
-        
+            return u, v, xmax, ymax
     except OSError as e:
         print(f"OS error: {e}")
     except Exception as e:
@@ -40,28 +43,18 @@ def normalize_timeavg_field(field):
 
     timeavg = np.mean(field, axis=0)    
 
-    return (timeavg - np.mean(timeavg)) / np.std(timeavg)
+    return timeavg
 
 def compute_2d_ke_spectrum(u, v, Lx, Ly):
     # Get dimensions
-    Nt, Ny, Nx = u.shape
-    
-    # Initialize arrays to store results
-    k_avg_all = []
-    KE_compensated_all = []
-    
-    # Loop over time snapshots
-    
-    # Extract single time snapshot
-    u_t = u
-    v_t = v
+    Nt, Nx, Ny = u.shape
     
     # Normalize velocity fields
-    u_norm = normalize_timeavg_field(u_t)
-    v_norm = normalize_timeavg_field(v_t)
+    u_norm = normalize_timeavg_field(u)
+    v_norm = normalize_timeavg_field(v)
     
     dx, dy = Lx / Nx, Ly / Ny
-    
+    print(f"dx is {dx}, dy is {dy}")   
     # Compute 2D FFT
     u_fft = np.fft.fft2(u_norm)
     v_fft = np.fft.fft2(v_norm)
@@ -69,19 +62,24 @@ def compute_2d_ke_spectrum(u, v, Lx, Ly):
     # Wavenumbers
     kx = 2*np.pi*np.fft.fftfreq(Nx, d=dx)
     ky = 2*np.pi*np.fft.fftfreq(Ny, d=dy)
-    kx_2d, ky_2d = np.meshgrid(kx, ky)
+    kx_2d, ky_2d = np.meshgrid(kx, ky, indexing='ij')
     dkx = 2 * np.pi / Lx
     dky = 2 * np.pi / Ly
+
     k_h = np.sqrt(kx_2d**2 + ky_2d**2)
     dk_min = min(dkx,dky)
+    dk_max = max(dkx,dky)
+    Nmax = np.sqrt(2) * max(Nx/2, Ny/2)
     
     # Compute KE spectral density
-    KE_density = (Lx * Ly * dk_min / (8 * np.pi * np.pi * Nx**2 * Ny**2)) * (np.abs(u_fft)**2 + np.abs(v_fft)**2)
+    KE_density = (dx * dy * dk_min / (8 * np.pi * np.pi * Nx * Ny)) * (np.abs(u_fft)**2 + np.abs(v_fft)**2)   # Equation 24
+    #KE_density = (Lx * Ly * dk_min / (8 * np.pi * np.pi * Nx**2 * Ny**2)) * (np.abs(u_fft)**2 + np.abs(v_fft)**2)   #Equation 20
+
     
     # Define bins for total wavenumber
-    k_max = np.max(k_h)
-    dk = np.min([2*np.pi/Lx, 2*np.pi/Ly]) # Use minimum as bin size
-    k_bins = np.arange(0, k_max + dk, dk)
+    k_max = Nmax * dk_max
+    dk = dk_max
+    k_bins = np.arange(dk/2 , k_max + dk/2, dk)
     
     # Bin the KE density
     KE_binned = np.zeros_like(k_bins[:-1])
@@ -112,11 +110,9 @@ def plot_ke_spectrum(k, E, savepath):
     print("Plotting Started.....")
     plt.figure(figsize=(10, 6))
 
-    # Plot a line for every 10th time step
-    num_timesteps = E.shape[0]
     plt.loglog(k, E, linewidth=1, alpha=0.7, label=f'KE Spectra')
 
-    plt.xlabel('Wavenumber (k)', fontsize=12)
+    plt.xlabel('Wavenumber (k) [m ^ -1]', fontsize=12)
     plt.ylabel('Normalized KE Spectral Density', fontsize=12)
 
     # Add reference slopes
@@ -144,7 +140,8 @@ if __name__ == '__main__':
     output_path = args.output_path
     plane_index = args.plane_index
     u, v, xmax, ymax = parse_input(input_file, plane_index)
+    print("Input Parsed")
     k, E = compute_2d_ke_spectrum(u, v, xmax, ymax)
     print(k.shape)
     print(E.shape)
-    plot_ke_spectrum(k, E, output_path)
+    plot_ke_spectrum(k, E, output_path) 
